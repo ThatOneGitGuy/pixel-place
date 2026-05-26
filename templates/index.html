@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PixelPlace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">⬛ PixelPlace</div>
+    <nav>
+      <button class="tab-btn active" data-tab="canvas">Canvas</button>
+      <button class="tab-btn" data-tab="my-pixel">My Pixel</button>
+    </nav>
+    <div id="auth-status">
+      <span id="user-label"></span>
+      <button id="auth-btn" onclick="openAuth('login')">Log In</button>
+      <button id="logout-btn" style="display:none" onclick="doLogout()">Log Out</button>
+    </div>
+  </header>
+
+  <!-- CANVAS TAB -->
+  <div id="tab-canvas" class="tab-content active">
+    <div id="canvas-controls">
+      <button onclick="zoom(1.25)">＋ Zoom In</button>
+      <button onclick="zoom(0.8)">－ Zoom Out</button>
+      <button onclick="resetZoom()">⌂ Reset</button>
+      <span id="hover-info">Hover a pixel to see info</span>
+    </div>
+    <div id="canvas-outer">
+      <div id="canvas-wrapper">
+        <canvas id="pixel-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY PIXEL TAB -->
+  <div id="tab-my-pixel" class="tab-content">
+    <div id="pixel-panel">
+      <div id="no-login-msg" class="panel-card">
+        <h2>You need an account</h2>
+        <p>Log in or register to claim your pixel on the canvas.</p>
+        <button onclick="openAuth('login')">Log In</button>
+        <button onclick="openAuth('register')">Register</button>
+      </div>
+
+      <div id="no-pixel-msg" class="panel-card" style="display:none">
+        <h2>Claim Your Pixel</h2>
+        <p>You get exactly one pixel — choose wisely!</p>
+        <div class="form-row">
+          <input type="text" id="pixel-id-input" placeholder="e.g. A1 or Z99 or AA50" maxlength="6"/>
+          <span>or</span>
+          <button onclick="claimRandom()">🎲 Random</button>
+        </div>
+        <div class="form-row">
+          <label>Color: </label>
+          <input type="color" id="claim-color" value="#e63946"/>
+        </div>
+        <button class="primary-btn" onclick="claimPixel()">Claim Pixel</button>
+        <p id="claim-error" class="error-msg"></p>
+      </div>
+
+      <div id="has-pixel-msg" class="panel-card" style="display:none">
+        <h2>Your Pixel</h2>
+        <div id="pixel-preview"></div>
+        <p>Coordinate: <strong id="owned-pixel-id"></strong></p>
+        <div class="form-row">
+          <label>Change Color: </label>
+          <input type="color" id="update-color" value="#e63946"/>
+        </div>
+        <button class="primary-btn" onclick="updateColor()">Update Color</button>
+        <p id="update-msg" class="success-msg"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div id="auth-modal" style="display:none">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeAuth()">✕</button>
+      <div class="modal-tabs">
+        <button id="modal-login-tab" onclick="switchModal('login')">Log In</button>
+        <button id="modal-reg-tab" onclick="switchModal('register')">Register</button>
+      </div>
+      <div id="modal-login-form">
+        <input type="text" id="login-user" placeholder="Username"/>
+        <input type="password" id="login-pass" placeholder="Password"/>
+        <button class="primary-btn" onclick="doLogin()">Log In</button>
+        <p id="login-error" class="error-msg"></p>
+      </div>
+      <div id="modal-reg-form" style="display:none">
+        <input type="text" id="reg-user" placeholder="Username (min 3 chars)"/>
+        <input type="password" id="reg-pass" placeholder="Password (min 4 chars)"/>
+        <button class="primary-btn" onclick="doRegister()">Create Account</button>
+        <p id="reg-error" class="error-msg"></p>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="/static/script.js"></script>
+</body>
+</html>
