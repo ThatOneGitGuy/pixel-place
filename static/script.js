@@ -2,7 +2,7 @@
 let currentUser = null;
 let currentPixelId = null;
 let pixelData = {};
-const GRID = 500;
+const GRID = 200;
 const PIXEL_SIZE = 3;
 let scale = 1;
 let isDragging = false, dragStart = {x:0,y:0}, scrollStart = {x:0,y:0};

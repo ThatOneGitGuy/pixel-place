@@ -106,7 +106,7 @@ def generate_all_pixel_ids():
     """Generate all pixel IDs for a 200x200 grid"""
     ids = []
     cols = []
-    for i in range(500):
+    for i in range(200):
         if i < 26:
             cols.append(chr(65 + i))
         elif i < 52:
@@ -116,6 +116,6 @@ def generate_all_pixel_ids():
         else:
             cols.append('C' + chr(65 + (i - 78)))
     for col in cols:
-        for row in range(1, 501):
+        for row in range(1, 201):
             ids.append(f"{col}{row}")
     return ids
