@@ -259,7 +259,8 @@ function refreshMyPixelPanel() {
 
 async function claimPixel() {
     const pixelIdInput = document.getElementById('pixel-id-input').value.trim();
-    const color = document.getElementById('claim-color').value;
+    const colorInput = document.getElementById('claim-color');
+    const color = colorInput.value || '#ff0000';
     const res = await fetch('/api/claim', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pixel_id: pixelIdInput, color })
@@ -277,7 +278,8 @@ async function claimPixel() {
 }
 
 async function claimRandom() {
-    const color = document.getElementById('claim-color').value;
+    const colorInput = document.getElementById('claim-color');
+    const color = colorInput.value || '#ff0000';
     const res = await fetch('/api/claim', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ random: true, color })
@@ -294,7 +296,8 @@ async function claimRandom() {
 }
 
 async function updateColor() {
-    const color = document.getElementById('update-color').value;
+    const colorInput = document.getElementById('update-color');
+    const color = colorInput.value || '#ff0000';
     const res = await fetch('/api/update_color', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ color })
