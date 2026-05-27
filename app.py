@@ -4,7 +4,7 @@ from database import init_db, get_user, create_user, get_pixel, claim_pixel, upd
 import os
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
 
 init_db()
 
