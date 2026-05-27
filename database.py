@@ -1,18 +1,18 @@
 import sqlite3
 import os
+import random
 
 DB_PATH = "/app/data/pixels.db"
 
 def get_db():
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
 def init_db():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = get_db()
     c = conn.cursor()
-
     c.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,7 +21,6 @@ def init_db():
             pixel_id TEXT UNIQUE
         )
     ''')
-
     c.execute('''
         CREATE TABLE IF NOT EXISTS pixels (
             pixel_id TEXT PRIMARY KEY,
@@ -30,7 +29,6 @@ def init_db():
             FOREIGN KEY(owner) REFERENCES users(username)
         )
     ''')
-
     conn.commit()
     conn.close()
 
@@ -68,4 +66,51 @@ def update_pixel_color(pixel_id, username, color):
     c = conn.cursor()
     c.execute("UPDATE pixels SET color = ? WHERE pixel_id = ? AND owner = ?", (color, pixel_id, username))
     conn.commit()
-    conn.clo
+    conn.close()
+
+def get_user(username):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT * FROM users WHERE username = ?", (username,))
+    row = c.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+def create_user(username, password_hash):
+    conn = get_db()
+    c = conn.cursor()
+    try:
+        c.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, password_hash))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
+def get_free_pixels(count=1):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT pixel_id FROM pixels")
+    taken = {row["pixel_id"] for row in c.fetchall()}
+    conn.close()
+    all_ids = generate_all_pixel_ids()
+    free = [pid for pid in all_ids if pid not in taken]
+    return random.sample(free, min(count, len(free)))
+
+def generate_all_pixel_ids():
+    ids = []
+    for row in range(1, 301):
+        for col in range(1, 301):
+            ids.append(f"{row}-{col}")
+    return ids
+
+def is_valid_pixel_id(pixel_id):
+    try:
+        parts = pixel_id.split('-')
+        if len(parts) != 2:
+            return False
+        row, col = int(parts[0]), int(parts[1])
+        return 1 <= row <= 300 and 1 <= col <= 300
+    except:
+        return False
