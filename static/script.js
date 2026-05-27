@@ -297,17 +297,19 @@ async function claimRandom() {
 
 async function updateColor() {
     const colorInput = document.getElementById('update-color');
-    const color = colorInput.value || '#ff0000';
+    const color = colorInput.value;
+    console.log('Sending color:', color);
     const res = await fetch('/api/update_color', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ color })
+        body: JSON.stringify({ color: color })
     });
     const data = await res.json();
+    console.log('Response:', data);
     if (data.success) {
-        pixelData[currentPixelId] = { owner: currentUser, color };
+        pixelData[currentPixelId] = { owner: currentUser, color: color };
         document.getElementById('pixel-preview').style.background = color;
-        document.getElementById('update-msg').textContent = 'Color updated!';
-        setTimeout(() => document.getElementById('update-msg').textContent = '', 2000);
+        document.getElementById('update-msg').textContent = 'Color updated! (' + color + ')';
+        setTimeout(() => document.getElementById('update-msg').textContent = '', 4000);
         drawCanvas();
     }
 }
