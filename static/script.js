@@ -36,7 +36,7 @@ function drawCanvas() {
         for (let col = 0; col < GRID; col++) {
             const pid = `${row + 1}-${col + 1}`;
             const info = pixelData[pid];
-            ctx.fillStyle = info ? info.color : '#e8e0d0';
+            ctx.fillStyle = info ? info.color : '#1e1e1e';
             ctx.fillRect(col * PIXEL_SIZE, row * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
         }
     }
