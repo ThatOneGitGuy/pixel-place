@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import init_db, get_user, create_user, get_pixel, claim_pixel, update_pixel_color, get_all_pixels, get_free_pixels
+from database import init_db, get_user, create_user, get_pixel, claim_pixel, update_pixel_color, get_all_pixels, get_free_pixels, is_valid_pixel_id
 import os
 
 app = Flask(__name__)
@@ -79,8 +79,8 @@ def claim():
         return jsonify({'error': 'You already own a pixel'}), 400
 
     data = request.json
-    pixel_id = data.get('pixel_id', '').strip().upper()
-    color = data.get('color', '#FF0000')
+    pixel_id = data.get('pixel_id', '').strip()
+    color = data.get('color', '#8b5e3c')
     random_pick = data.get('random', False)
 
     if random_pick:
@@ -91,6 +91,8 @@ def claim():
     else:
         if not pixel_id:
             return jsonify({'error': 'No pixel ID provided'}), 400
+        if not is_valid_pixel_id(pixel_id):
+            return jsonify({'error': 'Invalid pixel ID. Use format row-col, e.g. 1-1 or 150-200'}), 400
         existing = get_pixel(pixel_id)
         if existing and existing['owner']:
             return jsonify({'error': f'Pixel {pixel_id} is already taken'}), 400
@@ -111,7 +113,7 @@ def update_color():
         return jsonify({'error': 'You do not own a pixel yet'}), 400
 
     data = request.json
-    color = data.get('color', '#FF0000')
+    color = data.get('color', '#8b5e3c')
     update_pixel_color(user['pixel_id'], username, color)
     return jsonify({'success': True, 'pixel_id': user['pixel_id'], 'color': color})
 

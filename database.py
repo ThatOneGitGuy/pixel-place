@@ -90,7 +90,6 @@ def create_user(username, password_hash):
         conn.close()
 
 def get_free_pixels(count=1):
-    """Get pixel IDs not yet claimed"""
     conn = get_db()
     c = conn.cursor()
     c.execute("SELECT pixel_id FROM pixels")
@@ -103,19 +102,20 @@ def get_free_pixels(count=1):
     return random.sample(free, min(count, len(free)))
 
 def generate_all_pixel_ids():
-    """Generate all pixel IDs for a 200x200 grid"""
+    """Generate all pixel IDs for a 300x300 grid using row-col format: 1-1 to 300-300"""
     ids = []
-    cols = []
-    for i in range(200):
-        if i < 26:
-            cols.append(chr(65 + i))
-        elif i < 52:
-            cols.append('A' + chr(65 + (i - 26)))
-        elif i < 78:
-            cols.append('B' + chr(65 + (i - 52)))
-        else:
-            cols.append('C' + chr(65 + (i - 78)))
-    for col in cols:
-        for row in range(1, 201):
-            ids.append(f"{col}{row}")
+    for row in range(1, 301):
+        for col in range(1, 301):
+            ids.append(f"{row}-{col}")
     return ids
+
+def is_valid_pixel_id(pixel_id):
+    """Check if a pixel ID is valid for a 300x300 grid"""
+    try:
+        parts = pixel_id.split('-')
+        if len(parts) != 2:
+            return False
+        row, col = int(parts[0]), int(parts[1])
+        return 1 <= row <= 300 and 1 <= col <= 300
+    except:
+        return False
