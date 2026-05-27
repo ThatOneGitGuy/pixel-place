@@ -1,4 +1,3 @@
-// ─── State ───────────────────────────────────────────────
 let currentUser = null;
 let currentPixelId = null;
 let pixelData = {};
@@ -7,13 +6,11 @@ const PIXEL_SIZE = 4;
 let scale = 1;
 let isDragging = false, dragStart = {x:0,y:0}, scrollStart = {x:0,y:0};
 
-// ─── Canvas Setup ─────────────────────────────────────────
 const canvas = document.getElementById('pixel-canvas');
 const ctx = canvas.getContext('2d');
 canvas.width = GRID * PIXEL_SIZE;
 canvas.height = GRID * PIXEL_SIZE;
 
-// Convert pixel ID "row-col" to x,y canvas coords
 function pixelIdToXY(pid) {
     const parts = pid.split('-');
     if (parts.length !== 2) return null;
@@ -23,25 +20,20 @@ function pixelIdToXY(pid) {
     return { x: col, y: row };
 }
 
-// Convert canvas x,y to pixel ID
 function xyToPixelId(x, y) {
     return `${y + 1}-${x + 1}`;
 }
 
 function drawCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw all pixels
     for (let row = 0; row < GRID; row++) {
         for (let col = 0; col < GRID; col++) {
             const pid = `${row + 1}-${col + 1}`;
             const info = pixelData[pid];
-            ctx.fillStyle = info ? info.color : '#e8e0d0';
+            ctx.fillStyle = info ? info.color : '#1e1e1e';
             ctx.fillRect(col * PIXEL_SIZE, row * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
         }
     }
-
-    // Faint grid lines
     ctx.strokeStyle = 'rgba(100,80,50,0.08)';
     ctx.lineWidth = 0.5;
     for (let x = 0; x <= GRID; x++) {
@@ -56,19 +48,12 @@ function drawCanvas() {
         ctx.lineTo(canvas.width, y * PIXEL_SIZE);
         ctx.stroke();
     }
-
-    // Highlight owned pixel with a white border
     if (currentPixelId) {
         const pos = pixelIdToXY(currentPixelId);
         if (pos) {
-            ctx.strokeStyle = '#2c1f0e';
+            ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2;
-            ctx.strokeRect(
-                pos.x * PIXEL_SIZE + 1,
-                pos.y * PIXEL_SIZE + 1,
-                PIXEL_SIZE - 2,
-                PIXEL_SIZE - 2
-            );
+            ctx.strokeRect(pos.x * PIXEL_SIZE + 1, pos.y * PIXEL_SIZE + 1, PIXEL_SIZE - 2, PIXEL_SIZE - 2);
         }
     }
 }
@@ -79,16 +64,13 @@ async function loadPixels() {
     drawCanvas();
 }
 
-// ─── Zoom & Pan ───────────────────────────────────────────
 const wrapper = document.getElementById('canvas-wrapper');
 const outer = document.getElementById('canvas-outer');
 
 function applyScale() {
     wrapper.style.transform = `scale(${scale})`;
-    const w = canvas.width * scale;
-    const h = canvas.height * scale;
-    wrapper.style.width = w + 'px';
-    wrapper.style.height = h + 'px';
+    wrapper.style.width = (canvas.width * scale) + 'px';
+    wrapper.style.height = (canvas.height * scale) + 'px';
 }
 function zoom(factor) {
     scale = Math.min(Math.max(scale * factor, 0.2), 10);
@@ -96,7 +78,6 @@ function zoom(factor) {
 }
 function resetZoom() { scale = 1; applyScale(); outer.scrollTo(0, 0); }
 
-// Mouse drag to pan
 outer.addEventListener('mousedown', e => {
     isDragging = true;
     dragStart = { x: e.clientX, y: e.clientY };
@@ -109,7 +90,6 @@ window.addEventListener('mousemove', e => {
 });
 window.addEventListener('mouseup', () => isDragging = false);
 
-// Touch drag to pan
 outer.addEventListener('touchstart', e => {
     if (e.touches.length === 1) {
         isDragging = true;
@@ -124,7 +104,6 @@ outer.addEventListener('touchmove', e => {
 }, { passive: true });
 outer.addEventListener('touchend', () => isDragging = false);
 
-// Pinch to zoom
 let lastPinchDist = null;
 outer.addEventListener('touchmove', e => {
     if (e.touches.length === 2) {
@@ -137,13 +116,11 @@ outer.addEventListener('touchmove', e => {
 }, { passive: true });
 outer.addEventListener('touchend', () => lastPinchDist = null);
 
-// Mouse wheel zoom
 outer.addEventListener('wheel', e => {
     e.preventDefault();
     zoom(e.deltaY < 0 ? 1.1 : 0.9);
 }, { passive: false });
 
-// Hover info
 canvas.addEventListener('mousemove', e => {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -158,7 +135,6 @@ canvas.addEventListener('mousemove', e => {
     }
 });
 
-// ─── Auth ─────────────────────────────────────────────────
 function openAuth(mode) {
     document.getElementById('auth-modal').style.display = 'flex';
     switchModal(mode);
@@ -178,7 +154,8 @@ async function doLogin() {
     const username = document.getElementById('login-user').value.trim();
     const password = document.getElementById('login-pass').value.trim();
     const res = await fetch('/api/login', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
     });
     const data = await res.json();
@@ -198,7 +175,8 @@ async function doRegister() {
     const username = document.getElementById('reg-user').value.trim();
     const password = document.getElementById('reg-pass').value.trim();
     const res = await fetch('/api/register', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
     });
     const data = await res.json();
@@ -237,21 +215,25 @@ function updateAuthUI() {
     }
 }
 
-// ─── My Pixel Panel ───────────────────────────────────────
 function refreshMyPixelPanel() {
     const noLogin = document.getElementById('no-login-msg');
     const noPixel = document.getElementById('no-pixel-msg');
     const hasPixel = document.getElementById('has-pixel-msg');
-
     if (!currentUser) {
-        noLogin.style.display = ''; noPixel.style.display = 'none'; hasPixel.style.display = 'none';
+        noLogin.style.display = '';
+        noPixel.style.display = 'none';
+        hasPixel.style.display = 'none';
     } else if (!currentPixelId) {
-        noLogin.style.display = 'none'; noPixel.style.display = ''; hasPixel.style.display = 'none';
+        noLogin.style.display = 'none';
+        noPixel.style.display = '';
+        hasPixel.style.display = 'none';
     } else {
-        noLogin.style.display = 'none'; noPixel.style.display = 'none'; hasPixel.style.display = '';
+        noLogin.style.display = 'none';
+        noPixel.style.display = 'none';
+        hasPixel.style.display = '';
         document.getElementById('owned-pixel-id').textContent = currentPixelId;
         const info = pixelData[currentPixelId];
-        const color = info ? info.color : '#8b5e3c';
+        const color = info ? info.color : '#ff0000';
         document.getElementById('pixel-preview').style.background = color;
         document.getElementById('update-color').value = color;
     }
@@ -259,11 +241,11 @@ function refreshMyPixelPanel() {
 
 async function claimPixel() {
     const pixelIdInput = document.getElementById('pixel-id-input').value.trim();
-    const colorInput = document.getElementById('claim-color');
-    const color = colorInput.value || '#ff0000';
+    const color = document.getElementById('claim-color').value;
     const res = await fetch('/api/claim', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pixel_id: pixelIdInput, color })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pixel_id: pixelIdInput, color: color })
     });
     const data = await res.json();
     if (data.success) {
@@ -278,11 +260,11 @@ async function claimPixel() {
 }
 
 async function claimRandom() {
-    const colorInput = document.getElementById('claim-color');
-    const color = colorInput.value || '#ff0000';
+    const color = document.getElementById('claim-color').value;
     const res = await fetch('/api/claim', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ random: true, color })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ random: true, color: color })
     });
     const data = await res.json();
     if (data.success) {
@@ -296,25 +278,24 @@ async function claimRandom() {
 }
 
 async function updateColor() {
-    const colorInput = document.getElementById('update-color');
-    const color = colorInput.value;
-    console.log('Sending color:', color);
+    const color = document.getElementById('update-color').value;
     const res = await fetch('/api/update_color', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ color: color })
     });
     const data = await res.json();
-    console.log('Response:', data);
     if (data.success) {
-        pixelData[currentPixelId] = { owner: currentUser, color: color };
-        document.getElementById('pixel-preview').style.background = color;
-        document.getElementById('update-msg').textContent = 'Color updated! (' + color + ')';
-        setTimeout(() => document.getElementById('update-msg').textContent = '', 4000);
+        pixelData[currentPixelId] = { owner: currentUser, color: data.color };
+        document.getElementById('pixel-preview').style.background = data.color;
+        document.getElementById('update-msg').textContent = 'Color updated! (' + data.color + ')';
+        setTimeout(() => document.getElementById('update-msg').textContent = '', 3000);
         drawCanvas();
+    } else {
+        document.getElementById('update-msg').textContent = 'Error: ' + data.error;
     }
 }
 
-// ─── Tab Switching ────────────────────────────────────────
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const tab = btn.dataset.tab;
@@ -326,7 +307,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
-// ─── Init ─────────────────────────────────────────────────
 async function init() {
     const res = await fetch('/api/me');
     const data = await res.json();

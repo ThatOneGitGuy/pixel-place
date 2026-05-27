@@ -2,10 +2,9 @@ import sqlite3
 import os
 import random
 
-DB_PATH = "/app/data/pixels.db"
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pixels.db")
 
 def get_db():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
