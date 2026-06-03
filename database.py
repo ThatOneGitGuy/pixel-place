@@ -1,31 +1,54 @@
-import sqlite3
 import os
 import random
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pixels.db")
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
+USE_POSTGRES = bool(DATABASE_URL)
+
+if USE_POSTGRES:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+    if DATABASE_URL.startswith('postgres://'):
+        DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+    PH = '%s'
+else:
+    import sqlite3
+    DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pixels.db")
+    PH = '?'
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    if USE_POSTGRES:
+        return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    else:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        return conn
 
 def init_db():
     conn = get_db()
     c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            pixel_id TEXT UNIQUE
-        )
-    ''')
+    if USE_POSTGRES:
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                pixel_id TEXT UNIQUE
+            )
+        ''')
+    else:
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                pixel_id TEXT UNIQUE
+            )
+        ''')
     c.execute('''
         CREATE TABLE IF NOT EXISTS pixels (
             pixel_id TEXT PRIMARY KEY,
             owner TEXT,
-            color TEXT DEFAULT '#FFFFFF',
-            FOREIGN KEY(owner) REFERENCES users(username)
+            color TEXT DEFAULT '#FFFFFF'
         )
     ''')
     conn.commit()
@@ -42,7 +65,7 @@ def get_all_pixels():
 def get_pixel(pixel_id):
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT * FROM pixels WHERE pixel_id = ?", (pixel_id,))
+    c.execute(f"SELECT * FROM pixels WHERE pixel_id = {PH}", (pixel_id,))
     row = c.fetchone()
     conn.close()
     return dict(row) if row else None
@@ -51,11 +74,12 @@ def claim_pixel(pixel_id, username, color):
     conn = get_db()
     c = conn.cursor()
     try:
-        c.execute("INSERT INTO pixels (pixel_id, owner, color) VALUES (?, ?, ?)", (pixel_id, username, color))
-        c.execute("UPDATE users SET pixel_id = ? WHERE username = ?", (pixel_id, username))
+        c.execute(f"INSERT INTO pixels (pixel_id, owner, color) VALUES ({PH}, {PH}, {PH})", (pixel_id, username, color))
+        c.execute(f"UPDATE users SET pixel_id = {PH} WHERE username = {PH}", (pixel_id, username))
         conn.commit()
         return True
-    except sqlite3.IntegrityError:
+    except Exception:
+        conn.rollback() if USE_POSTGRES else None
         return False
     finally:
         conn.close()
@@ -63,14 +87,14 @@ def claim_pixel(pixel_id, username, color):
 def update_pixel_color(pixel_id, username, color):
     conn = get_db()
     c = conn.cursor()
-    c.execute("UPDATE pixels SET color = ? WHERE pixel_id = ? AND owner = ?", (color, pixel_id, username))
+    c.execute(f"UPDATE pixels SET color = {PH} WHERE pixel_id = {PH} AND owner = {PH}", (color, pixel_id, username))
     conn.commit()
     conn.close()
 
 def get_user(username):
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE username = ?", (username,))
+    c.execute(f"SELECT * FROM users WHERE username = {PH}", (username,))
     row = c.fetchone()
     conn.close()
     return dict(row) if row else None
@@ -79,10 +103,11 @@ def create_user(username, password_hash):
     conn = get_db()
     c = conn.cursor()
     try:
-        c.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, password_hash))
+        c.execute(f"INSERT INTO users (username, password_hash) VALUES ({PH}, {PH})", (username, password_hash))
         conn.commit()
         return True
-    except sqlite3.IntegrityError:
+    except Exception:
+        conn.rollback() if USE_POSTGRES else None
         return False
     finally:
         conn.close()

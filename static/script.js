@@ -48,12 +48,12 @@ function drawCanvas() {
         ctx.lineTo(canvas.width, y * PIXEL_SIZE);
         ctx.stroke();
     }
-    if (currentPixelId) {
+   if (currentPixelId) {
         const pos = pixelIdToXY(currentPixelId);
         if (pos) {
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(pos.x * PIXEL_SIZE + 1, pos.y * PIXEL_SIZE + 1, PIXEL_SIZE - 2, PIXEL_SIZE - 2);
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(pos.x * PIXEL_SIZE, pos.y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
         }
     }
 }
