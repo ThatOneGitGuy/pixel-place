@@ -90,13 +90,19 @@
       </div>
       <div id="modal-login-form">
         <input type="text" id="login-user" placeholder="Username"/>
-        <input type="password" id="login-pass" placeholder="Password"/>
+        <div style="position:relative">
+          <input type="password" id="login-pass" placeholder="Password" style="padding-right:2.5rem"/>
+          <span onclick="togglePass('login-pass', this)" style="position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:0.85rem;user-select:none">Show</span>
+        </div>
         <button class="primary-btn" onclick="doLogin()">Log In</button>
         <p id="login-error" class="error-msg"></p>
       </div>
       <div id="modal-reg-form" style="display:none">
         <input type="text" id="reg-user" placeholder="Username (min 3 chars)"/>
-        <input type="password" id="reg-pass" placeholder="Password (min 4 chars)"/>
+        <div style="position:relative">
+          <input type="password" id="reg-pass" placeholder="Password (min 4 chars)" style="padding-right:2.5rem"/>
+          <span onclick="togglePass('reg-pass', this)" style="position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:0.85rem;user-select:none">Show</span>
+        </div>
         <button class="primary-btn" onclick="doRegister()">Create Account</button>
         <p id="reg-error" class="error-msg"></p>
       </div>

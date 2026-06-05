@@ -24,6 +24,17 @@ function xyToPixelId(x, y) {
     return `${y + 1}-${x + 1}`;
 }
 
+function togglePass(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = 'Hide';
+    } else {
+        input.type = 'password';
+        btn.textContent = 'Show';
+    }
+}
+
 function drawCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let row = 0; row < GRID; row++) {
