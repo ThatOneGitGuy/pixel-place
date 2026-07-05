@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>PixelPlace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,900;1,700;1,900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/style.css"/>
 </head>
 <body>
@@ -13,7 +13,7 @@
 
   <!-- HEADER -->
   <header>
-    <div class="logo">⬛ PixelPlace</div>
+    <div class="logo">PixelPlace</div>
     <nav>
       <button class="tab-btn active" data-tab="canvas">Canvas</button>
       <button class="tab-btn" data-tab="my-pixel">My Pixel</button>
@@ -28,10 +28,10 @@
   <!-- CANVAS TAB -->
   <div id="tab-canvas" class="tab-content active">
     <div id="canvas-controls">
-      <button onclick="zoom(1.25)">＋ Zoom In</button>
-      <button onclick="zoom(0.8)">－ Zoom Out</button>
-      <button onclick="resetZoom()">⌂ Reset</button>
-      <span id="hover-info">Hover a pixel to see info</span>
+      <button onclick="zoom(1.25)">+ Zoom In</button>
+      <button onclick="zoom(0.8)">- Zoom Out</button>
+      <button onclick="resetZoom()">Reset</button>
+      <span id="hover-info">Hover a pixel for info</span>
     </div>
     <div id="canvas-outer">
       <div id="canvas-wrapper">
@@ -43,69 +43,114 @@
   <!-- MY PIXEL TAB -->
   <div id="tab-my-pixel" class="tab-content">
     <div id="pixel-panel">
+
       <div id="no-login-msg" class="panel-card">
-        <h2>You need an account</h2>
-        <p>Log in or register to claim your pixel on the canvas.</p>
-        <button onclick="openAuth('login')">Log In</button>
-        <button onclick="openAuth('register')">Register</button>
+        <div class="card-header">
+          <h2>Your Canvas Awaits</h2>
+          <p>One pixel. Yours forever. Log in or register to claim it.</p>
+        </div>
+        <div class="card-actions">
+          <button onclick="openAuth('login')">Log In</button>
+          <button class="primary-btn" style="width:auto" onclick="openAuth('register')">Register</button>
+        </div>
       </div>
 
       <div id="no-pixel-msg" class="panel-card" style="display:none">
-        <h2>Claim Your Pixel</h2>
-        <p>You get exactly one pixel — choose wisely!</p>
-        <div class="form-row">
-          <input type="text" id="pixel-id-input" placeholder="e.g. 1-1 or 150-200 or 300-300" maxlength="7"/>
-          <span>or</span>
-          <button onclick="claimRandom()">🎲 Random</button>
+        <div class="card-header">
+          <h2>Claim Your Dot</h2>
+          <p>One pixel. That's all you get. Make it count.</p>
         </div>
-        <div class="form-row">
-          <label>Color: </label>
-          <input type="color" id="claim-color" value="#e63946"/>
+        <div class="card-body">
+          <span class="field-label">Pixel Coordinate</span>
+          <div class="form-row" style="margin-top:0">
+            <input type="text" id="pixel-id-input" placeholder="e.g. 1-1 or 150-200" maxlength="7" style="flex:1"/>
+            <button onclick="claimRandom()">🎲 Random</button>
+          </div>
+
+          <span class="field-label">Your Color</span>
+          <div class="form-row" style="margin-top:0">
+            <input type="color" id="claim-color" value="#E8001C"/>
+            <span style="font-size:0.85rem;color:#888">Pick any color</span>
+          </div>
+
+          <div style="margin-top:1.2rem">
+            <button class="primary-btn" onclick="claimPixel()">Claim Pixel</button>
+          </div>
+          <p id="claim-error" class="error-msg"></p>
         </div>
-        <button class="primary-btn" onclick="claimPixel()">Claim Pixel</button>
-        <p id="claim-error" class="error-msg"></p>
       </div>
 
       <div id="has-pixel-msg" class="panel-card" style="display:none">
-        <h2>Your Pixel</h2>
-        <div id="pixel-preview"></div>
-        <p>Coordinate: <strong id="owned-pixel-id"></strong></p>
-        <div class="form-row">
-          <label>Change Color: </label>
-          <input type="color" id="update-color" value="#e63946"/>
+        <div class="card-header">
+          <h2>Your Dot</h2>
+          <p>This is your mark on the canvas.</p>
         </div>
-        <button class="primary-btn" onclick="updateColor()">Update Color</button>
-        <p id="update-msg" class="success-msg"></p>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.5rem">
+            <div id="pixel-preview"></div>
+            <div>
+              <div class="pixel-coord-label">Coordinate</div>
+              <div class="pixel-coord" id="owned-pixel-id"></div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <span class="field-label">Change Color</span>
+          <div class="form-row" style="margin-top:0">
+            <input type="color" id="update-color" value="#E8001C"/>
+            <span style="font-size:0.85rem;color:#888">Pick a new color</span>
+          </div>
+          <div style="margin-top:1rem">
+            <button class="primary-btn" onclick="updateColor()">Save Color</button>
+          </div>
+          <p id="update-msg" class="success-msg"></p>
+        </div>
       </div>
+
     </div>
   </div>
 
   <!-- AUTH MODAL -->
   <div id="auth-modal" style="display:none">
     <div class="modal-box">
-      <button class="modal-close" onclick="closeAuth()">✕</button>
+      <div class="modal-kruger-header">
+        <h3 id="modal-title">Who Are You?</h3>
+        <button class="modal-close" onclick="closeAuth()">✕ Close</button>
+      </div>
       <div class="modal-tabs">
-        <button id="modal-login-tab" onclick="switchModal('login')">Log In</button>
+        <button id="modal-login-tab" class="active" onclick="switchModal('login')">Log In</button>
         <button id="modal-reg-tab" onclick="switchModal('register')">Register</button>
       </div>
-      <div id="modal-login-form">
-        <input type="text" id="login-user" placeholder="Username"/>
-        <div style="position:relative">
-          <input type="password" id="login-pass" placeholder="Password" style="padding-right:2.5rem"/>
-          <span onclick="togglePass('login-pass', this)" style="position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:0.85rem;user-select:none">Show</span>
+
+      <div id="modal-login-form" class="modal-body">
+        <span class="field-label">Username</span>
+        <input type="text" id="login-user" placeholder="your_username"/>
+        <span class="field-label">Password</span>
+        <div class="pass-wrap">
+          <input type="password" id="login-pass" placeholder="••••••••"/>
+          <button class="pass-toggle" onclick="togglePass('login-pass', this)">Show</button>
         </div>
-        <button class="primary-btn" onclick="doLogin()">Log In</button>
+        <div style="margin-top:1.2rem">
+          <button class="primary-btn" onclick="doLogin()">Log In</button>
+        </div>
         <p id="login-error" class="error-msg"></p>
       </div>
-      <div id="modal-reg-form" style="display:none">
-        <input type="text" id="reg-user" placeholder="Username (min 3 chars)"/>
-        <div style="position:relative">
-          <input type="password" id="reg-pass" placeholder="Password (min 4 chars)" style="padding-right:2.5rem"/>
-          <span onclick="togglePass('reg-pass', this)" style="position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:0.85rem;user-select:none">Show</span>
+
+      <div id="modal-reg-form" class="modal-body" style="display:none">
+        <span class="field-label">Choose a Username</span>
+        <input type="text" id="reg-user" placeholder="min. 3 characters"/>
+        <span class="field-label">Choose a Password</span>
+        <div class="pass-wrap">
+          <input type="password" id="reg-pass" placeholder="min. 4 characters"/>
+          <button class="pass-toggle" onclick="togglePass('reg-pass', this)">Show</button>
         </div>
-        <button class="primary-btn" onclick="doRegister()">Create Account</button>
+        <div style="margin-top:1.2rem">
+          <button class="primary-btn" onclick="doRegister()">Create Account</button>
+        </div>
         <p id="reg-error" class="error-msg"></p>
       </div>
+
     </div>
   </div>
 
