@@ -41,7 +41,7 @@ function drawCanvas() {
         for (let col = 0; col < GRID; col++) {
             const pid = `${row + 1}-${col + 1}`;
             const info = pixelData[pid];
-            ctx.fillStyle = info ? info.color : '#1e1e1e';
+            ctx.fillStyle = info ? info.color : '#ffffff';
             ctx.fillRect(col * PIXEL_SIZE, row * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
         }
     }
@@ -88,6 +88,24 @@ function zoom(factor) {
     applyScale();
 }
 function resetZoom() { scale = 1; applyScale(); outer.scrollTo(0, 0); }
+
+function findMyPixel() {
+    if (!currentPixelId) return;
+    const pos = pixelIdToXY(currentPixelId);
+    if (!pos) return;
+    const targetScale = 10;
+    scale = targetScale;
+    applyScale();
+    const pixelCenterX = (pos.x + 0.5) * PIXEL_SIZE * targetScale;
+    const pixelCenterY = (pos.y + 0.5) * PIXEL_SIZE * targetScale;
+    const viewW = outer.clientWidth;
+    const viewH = outer.clientHeight;
+    outer.scrollTo({
+        left: pixelCenterX - viewW / 2,
+        top: pixelCenterY - viewH / 2,
+        behavior: 'smooth'
+    });
+}
 
 outer.addEventListener('mousedown', e => {
     isDragging = true;
@@ -215,14 +233,17 @@ function updateAuthUI() {
     const label = document.getElementById('user-label');
     const authBtn = document.getElementById('auth-btn');
     const logoutBtn = document.getElementById('logout-btn');
+    const findBtn = document.getElementById('find-my-pixel-btn');
     if (currentUser) {
         label.textContent = currentUser;
         authBtn.style.display = 'none';
         logoutBtn.style.display = '';
+        if (findBtn) findBtn.style.display = currentPixelId ? '' : 'none';
     } else {
         label.textContent = '';
         authBtn.style.display = '';
         logoutBtn.style.display = 'none';
+        if (findBtn) findBtn.style.display = 'none';
     }
 }
 
@@ -265,6 +286,8 @@ async function claimPixel() {
         refreshMyPixelPanel();
         drawCanvas();
         document.getElementById('claim-error').textContent = '';
+        const findBtn = document.getElementById('find-my-pixel-btn');
+        if (findBtn) findBtn.style.display = '';
     } else {
         document.getElementById('claim-error').textContent = data.error;
     }
@@ -283,6 +306,8 @@ async function claimRandom() {
         pixelData[currentPixelId] = { owner: currentUser, color: data.color };
         refreshMyPixelPanel();
         drawCanvas();
+        const findBtn = document.getElementById('find-my-pixel-btn');
+        if (findBtn) findBtn.style.display = '';
     } else {
         document.getElementById('claim-error').textContent = data.error;
     }
